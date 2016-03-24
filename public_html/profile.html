@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Take a date - Profile</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="bootstrap-3.3.6-dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="bootstrap-3.3.6-dist/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="font-awesome-4.5.0/css/font-awesome.min.css">
+
+        <script src="jquery-1.12.1.min.js"></script>
+        <script src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+        <style>
+            td{
+                padding: 10px;
+            }
+
+        </style>
+        <script>
+            $().ready(function () {
+                if (document.cookie === "") {
+                    window.location = "index.html";
+                }
+                var userAuth = document.cookie.split(';')[0].replace("userAuth=", "");
+                var userid = document.cookie.split(';')[1].replace(" userId=", "");
+                $(document).ajaxStart(function () {
+                    $("#loading-image").show();
+                });
+
+                $(document).ajaxStop(function () {
+                    $("#loading-image").hide();
+                });
+                $.ajax({
+                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + userid,
+                    type: "GET",
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                    },
+                    success: function (data) {
+                        $("#avatar").attr("src", "");
+                        $("#avatar").attr("src", data.avatar);
+                        $("#title").text(data.name);
+                        if (!data.message.includes("You are not allowed")) {
+                            $("#gender").text(data.gender === 1 ? "Female" : "Male");
+                            $("#height").text(data.height + "cm");
+                            $("#weight").text(data.weight + "kg");
+                            $("#phone-number").text(data.phoneNumber);
+                            $("#email").text(data.email);
+                            $("#picture").attr("href", "allpicture.html");
+                            var username = userAuth.split(":")[0];
+                            $("#picture").text(username === data.userName ? "Click here to see your pictures" : "Click here to see " + data.name + "'s pictures");
+                            if (username === data.userName) {
+                                var $button = $("<button/>", {
+                                    id: "edit-btn",
+                                    class: "btn btn-warning"
+                                }).text("Edit");
+                                $("#buttons").append($button);
+                            } else {
+                                var $button = $("<button/>", {
+                                    id: "unfriend-btn",
+                                    class: "btn btn-danger"
+                                }).text("Unfriend");
+                                $("#buttons").append($button);
+                            }
+                        } else {
+                            $("#profile-detail").hide();
+                            $("#error").show();
+                            $("#not-allowed").text(data.message);
+                            var $button = $("<button/>", {
+                                id: "add-friend-btn",
+                                class: "btn btn-success"
+                            }).text("Add friend");
+                            $("#buttons").append($button);
+                        }
+                    }
+                });
+
+            });
+
+        </script>
+
+    </head>
+    <body>
+        <div class="container">
+            <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
+            </div>
+            <div class="jumbotron">
+                <div class="col-md-2">
+                    <img id="avatar" src="Resource/loading_spinner.gif" style="width: 75px; height: 75px;" alt="Picture not found"/>
+                </div>
+                <h3 id="title" class="col-md-6">
+
+                </h3>
+            </div>
+            <div id="profile-detail" class="col-md-10 col-md-offset-1 alert alert-info">
+                <table>
+                    <tr>
+                        <td>
+                            <i class ="fa fa-venus-mars fa-2x"></i>
+                        </td>
+                        <td>
+                            Gender:
+                        </td>
+                        <td>
+                            <span id="gender"></span>
+                        </td>
+                    </tr>
+
+
+                    <tr>
+                        <td>
+                            <i class ="fa fa-male fa-2x"></i>
+                        </td>
+                        <td>
+                            Height:
+                        </td>
+                        <td>
+                            <span id="height"></span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <i class ="fa fa-tachometer fa-2x"></i>
+                        </td>
+                        <td>
+                            Weight:
+                        </td>
+                        <td>
+                            <span id="weight"></span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <i class ="fa fa-mobile fa-2x"></i>
+                        </td>
+                        <td>
+                            Phone number:
+                        </td>
+                        <td>
+                            <span id="phone-number"></span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <i class ="fa fa-envelope fa-2x"></i>
+                        </td>
+                        <td>
+                            Email:
+                        </td>
+                        <td>
+                            <span id="email"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class ="fa fa-picture-o fa-2x"></i>
+                        </td>
+                        <td colspan="2">
+                            <a id="picture"></a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div id="error" style="display: none;">
+                <i class="fa fa-minus-circle" id="not-allowed"></i>
+            </div>
+            <div  id="loading-image" align="center" class="col-md-10 col-md-offset-1">
+                <img style="height: 75px; width: 75px" alt="loading" src="Resource/loading_spinner.gif" />
+            </div>
+            <div align="right" id="buttons" class="col-md-10 col-md-offset-1" style="padding-right: -15px">
+
+            </div>
+        </div>
+    </body>
+</html>

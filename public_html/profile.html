@@ -24,20 +24,28 @@ and open the template in the editor.
         </style>
         <script>
             $().ready(function () {
-                if (document.cookie === "") {
+                if (!window.sessionStorage.userauth) {
                     window.location = "index.html";
                 }
-                var userAuth = document.cookie.split(';')[0].replace("userAuth=", "");
-                var userid = document.cookie.split(';')[1].replace(" userId=", "");
+                var userAuth = window.sessionStorage.getItem("userauth");
+                var userid = window.sessionStorage.getItem("userid");
+                var currentuserid = window.sessionStorage.getItem("currentuserid");
                 $(document).ajaxStart(function () {
                     $("#loading-image").show();
+                    $("button").prop("disabled", true);
                 });
-
                 $(document).ajaxStop(function () {
                     $("#loading-image").hide();
+                    $("button").prop("disabled", false);
                 });
+                
+                $("body").on("click", "#edit-btn" ,function(){
+                    console.log("clicked");
+                    window.sessionStorage.setItem("currentuserid", userid);
+                    window.location = "edit-profile.html";
+                })
                 $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + userid,
+                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + currentuserid,
                     type: "GET",
                     xhrFields: {
                         withCredentials: true
@@ -50,11 +58,14 @@ and open the template in the editor.
                         $("#avatar").attr("src", data.avatar);
                         $("#title").text(data.name);
                         if (!data.message.includes("You are not allowed")) {
+                            console.log(data.gender);
                             $("#gender").text(data.gender === 1 ? "Female" : "Male");
                             $("#height").text(data.height + "cm");
                             $("#weight").text(data.weight + "kg");
                             $("#phone-number").text(data.phoneNumber);
                             $("#email").text(data.email);
+                            $("#address").text(data.address);
+                            $("#birthday").text(formatDate(data.birthday));
                             $("#picture").attr("href", "allpicture.html");
                             var username = userAuth.split(":")[0];
                             $("#picture").text(username === data.userName ? "Click here to see your pictures" : "Click here to see " + data.name + "'s pictures");
@@ -85,7 +96,34 @@ and open the template in the editor.
                 });
 
             });
-
+            var formatDate = function (dateString) {
+                var date = new Date(dateString);
+                var dd = date.getDate();
+                var mm = date.getMonth() + 1;//January is 0! 
+                var yyyy = date.getFullYear();
+                if (dd < 10) {
+                    dd = '0' + dd
+                }
+                if (mm < 10) {
+                    mm = '0' + mm
+                }
+                return dd+'/'+mm+'/'+yyyy;
+            };
+            var checkForm = function () {
+                if ($("#username").val() === "") {
+                    $("#msg").text("Please enter username!");
+                    $("#msg").show();
+                    setTimeout(function(){$("#msg").hide()}, 5000)
+                    return false;
+                }
+                if ($("#pwd").val() === "") {
+                    $("#msg").text("Please enter password!");
+                    $("#msg").show();
+                    setTimeout(function(){$("#msg").hide()}, 5000)
+                    return false;
+                }
+                return true;
+            }
         </script>
 
     </head>
@@ -94,7 +132,7 @@ and open the template in the editor.
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
             </div>
             <div class="jumbotron">
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <img id="avatar" src="Resource/loading_spinner.gif" style="width: 75px; height: 75px;" alt="Picture not found"/>
                 </div>
                 <h3 id="title" class="col-md-6">
@@ -114,8 +152,39 @@ and open the template in the editor.
                             <span id="gender"></span>
                         </td>
                     </tr>
-
-
+                    <tr>
+                        <td>
+                            <i class ="fa fa-birthday-cake fa-2x"></i>
+                        </td>
+                        <td>
+                            Birthday:
+                        </td>
+                        <td>
+                            <span id="birthday"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class ="fa fa-mobile fa-2x"></i>
+                        </td>
+                        <td>
+                            Phone number:
+                        </td>
+                        <td>
+                            <span id="phone-number"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <i class ="fa fa-book fa-2x"></i>
+                        </td>
+                        <td>
+                            Address
+                        </td>
+                        <td>
+                            <span id="address"></span>
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             <i class ="fa fa-male fa-2x"></i>
@@ -140,17 +209,7 @@ and open the template in the editor.
                         </td>
                     </tr>
 
-                    <tr>
-                        <td>
-                            <i class ="fa fa-mobile fa-2x"></i>
-                        </td>
-                        <td>
-                            Phone number:
-                        </td>
-                        <td>
-                            <span id="phone-number"></span>
-                        </td>
-                    </tr>
+
 
                     <tr>
                         <td>

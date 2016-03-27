@@ -6,7 +6,7 @@ and open the template in the editor.
 -->
 <html>
     <head>
-        <title>Take a date - Edit profile</title>
+        <title>Take a date - Sign up</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="bootstrap-3.3.6-dist/css/bootstrap.min.css">
@@ -21,12 +21,7 @@ and open the template in the editor.
         <script>
             $().ready(function () {
                 //var users1 = [{id: "1", username: "phuonglam", name: "Lam Minh Phuong", email: "abc@example.com", status: "1"}, {id: "2",username: "huongnguyen", name: "Nguyen Thi Huong", email: "abc2@example.com", status: "1"}, {id: "3", username: "huela", name: "La Van Hue", email: "abc3@example.com", status: "1"}, {id: "4", username: "tienngo", name: "Ngo Thuy Tien", email: "abc4@example.com", status: "1"}];
-                if (!window.sessionStorage.userauth) {
-                    window.location = "index.html";
-                }
-                var userAuth = window.sessionStorage.getItem("userauth");
-                var userid = window.sessionStorage.getItem("userid");
-
+                window.sessionStorage.clear();
                 $(document).ajaxStart(function () {
                     $("#loading-image").show();
                     $("button").prop("disabled", true);
@@ -35,43 +30,48 @@ and open the template in the editor.
                     $("#loading-image").hide();
                     $("button").prop("disabled", false);
                 });
-                $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + userid,
-                    type: "GET",
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
-                    },
-                    success: function (data) {
-                        if (!data.message.includes("You are not allowed")) {
-                            $("#username").val(data.test);
-                            $("#email").val(data.email);
-                            $("#output").attr("src", data.avatar);
-                            $("#name").val(data.name);
-                            if (data.gender === 1) {
-                                $("#female").prop("checked", true);
-                            } else {
-                                $("#male").prop("checked", true);
-                            }
-                            $("#birthday").val(data.birthday);
-                            $("#phone-number").val(data.test2);
-                            $("#address").val(data.address);
-                            $("#height").val(data.height);
-                            $("#weight").val(data.weight);
-                        } else {
-                            window.sessionStorage.clear();
-                            window.location = "index.html";
+                $("#username").change(function () {
+                    $.ajax({
+                        url: "http://localhost:8080/DatingApp-V1/getservice/checkusername/" + $("#username").val(),
+                        method: "GET",
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        beforeSend: function () {
+                            $("#checkusername").attr("class", "glyphicon glyphicon-refresh");
                         }
 
-                    }
-                })
+                    }).done(function (data) {
+                        if (data.message === "Invalid") {
+                            $("#checkusername").attr("class", "glyphicon glyphicon-remove");
+                        } else {
+                            $("#checkusername").attr("class", "glyphicon glyphicon-ok");
+                        }
+                    });
+                });
+                $("#email").change(function () {
+                    $.ajax({
+                        url: "http://localhost:8080/DatingApp-V1/getservice/checkuseremail/" + $("#email").val(),
+                        method: "GET",
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        beforeSend: function () {
+                            $("#checkemail").attr("class", "glyphicon glyphicon-refresh");
+                        }
+
+                    }).done(function (data) {
+                        if (data.message === "Invalid") {
+                            $("#checkemail").attr("class", "glyphicon glyphicon-remove");
+                        } else {
+                            $("#checkemail").attr("class", "glyphicon glyphicon-ok");
+                        }
+                    });
+                });
                 $("#btnSubmit").click(function (event) {
                     event.preventDefault();
                     if (checkForm()) {
                         var userData = {
-                            id: userid,
                             email: $("#email").val(),
                             username1: $("#username").val(),
                             name: $("#name").val(),
@@ -81,6 +81,7 @@ and open the template in the editor.
                             height: $("#height").val(),
                             weight: $("#weight").val(),
                             avatar: "",
+                            password: $("#pwd").val(),
                             gender: $("input[type='radio']:checked").val() === "female" ? 1 : 2,
                             birthday: $("#birthday").val() === "" ? null : $("#birthday").val(),
                             message: "",
@@ -88,7 +89,6 @@ and open the template in the editor.
                         };
                         var formData = new FormData();
                         formData.append("image", $("#picture")[0].files[0]);
-
                         $.ajax({
                             url: "https://api.imgur.com/3/image",
                             type: "POST",
@@ -100,32 +100,76 @@ and open the template in the editor.
                             success: function (response) {
                                 console.log(response);
                                 userData.avatar = response.data.link;
+                                var photo_hash = response.data.deletehash;
+
                                 $.ajax({
-                                    url: "http://localhost:8080/DatingApp-V1/putservice/user/edit",
-                                    type: "PUT",
+                                    url: "http://localhost:8080/DatingApp-V1/postservice/user/add",
+                                    type: "POST",
                                     xhrFields: {
                                         withCredentials: true
                                     },
                                     contentType: "application/json",
                                     data: JSON.stringify(userData),
                                     beforeSend: function (xhr) {
-                                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa('admin:admin'));
                                     }
                                 }).done(function (data) {
                                     if (data.message === "Successful") {
-                                        window.alert("Info saved, click OK to go back to profile");
+                                        window.alert("User created, click OK to go to log in page");
                                         window.location = "index.html";
                                     }
                                 });
-                            }
+                            },
+                            cache: false,
+                            contentType: false,
+                            processData: false
                         });
-
                     }
 
                 });
 
             });
             var checkForm = function () {
+                if ($("#username").val() === "") {
+                    $("#msg").text("Please enter username!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
+                if ($("#checkusername").attr("class") === "glyphicon glyphicon-remove") {
+                    $("#msg").text("Invalid username!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
+                if ($("#email").val() === "") {
+                    $("#msg").text("Please enter email!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
+                if ($("#checkemail").attr("class") === "glyphicon glyphicon-remove") {
+                    $("#msg").text("Invalid email!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
+                if ($("#password").val() === "") {
+                    $("#msg").text("Please enter password!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
                 if ($("#name").val() === "") {
                     $("#msg").text("Please enter name!");
                     $("#msg").show();
@@ -146,7 +190,27 @@ and open the template in the editor.
                 };
                 reader.readAsDataURL(input.files[0]);
             };
-
+            function postToImgur() {
+                var formData = new FormData();
+                formData.append("image", $("#picture").files[0]);
+                $.ajax({
+                    url: "https://api.imgur.com/3/image",
+                    type: "POST",
+                    datatype: "json",
+                    headers: {
+                        "Authorization": "Client-ID 142cd168e236fc9"
+                    },
+                    data: formData,
+                    success: function (response) {
+                        console.log(response);
+                        var photo = response.data.link;
+                        var photo_hash = response.data.deletehash;
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            }
 
         </script>
     </head>
@@ -154,20 +218,22 @@ and open the template in the editor.
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center"></div>
             <div class="jumbotron">
-                <h3 id="title">Edit profile</h3>
+                <h3 id="title">Sign up</h3>
             </div>
-            <form role="form">
+            <form role="form" id="form">
                 <div class="form-group">
                     <label for="username">Username:</label>
-                    <input type="text" class="form-control" id="username" style="float: left;" readonly>
+                    <input type="text" class="form-control" id="username" style="float: left;">
+                    <span id="checkusername"></span>
                 </div>
                 <div class="form-group">
                     <label for="email">Email address:</label>
-                    <input type="email" class="form-control" id="email" style="float: left;" readonly>
+                    <input type="email" class="form-control" id="email" style="float: left;">
+                    <span id="checkemail"></span>
                 </div>
                 <div class="form-group">
                     <label for="pwd">Password:</label>
-                    <button id="btnChangePassword">Change password</button>
+                    <input type="password" class="form-control" id="pwd">
                 </div>
                 <div class="form-group">
                     <label for="picture">Avatar: </label>
@@ -211,7 +277,7 @@ and open the template in the editor.
                 </div>
 
                 <div align="right" style="float: right;">
-                    <button class="btn btn-primary" id="btnSubmit">Save</button>
+                    <button class="btn btn-primary" id="btnSubmit">Create</button>
                 </div>
                 <div  id="loading-image" align="center" style="display: none; float: right">
                     <img style="height: 40px; width: 40px" alt="loading" src="Resource/loading_spinner.gif" />

@@ -88,11 +88,12 @@ and open the template in the editor.
                         };
                         var formData = new FormData();
                         formData.append("image", $("#picture")[0].files[0]);
-
                         $.ajax({
                             url: "https://api.imgur.com/3/image",
                             type: "POST",
                             datatype: "json",
+                            contentType: false,
+                            processData: false,
                             headers: {
                                 "Authorization": "Client-ID 142cd168e236fc9"
                             },
@@ -123,6 +124,10 @@ and open the template in the editor.
                     }
 
                 });
+                $("#btnBack").click(function(){
+                    window.sessionStorage.setItem("currentuserid", userid);
+                    window.location = "profile.html";
+                })
 
             });
             var checkForm = function () {
@@ -212,6 +217,7 @@ and open the template in the editor.
 
                 <div align="right" style="float: right;">
                     <button class="btn btn-primary" id="btnSubmit">Save</button>
+                    <button class="btn btn-success" id="btnBack">Back</button>
                 </div>
                 <div  id="loading-image" align="center" style="display: none; float: right">
                     <img style="height: 40px; width: 40px" alt="loading" src="Resource/loading_spinner.gif" />

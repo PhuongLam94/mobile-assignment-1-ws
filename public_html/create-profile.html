@@ -32,10 +32,10 @@ and open the template in the editor.
                 });
                 $("#username").change(function () {
                     $.ajax({
-                        url: "http://localhost:8080/DatingApp-V1/getservice/checkusername/" + $("#username").val(),
+                        url: "http://localhost:8080/datingapp/getservice/checkusername/" + $("#username").val(),
                         method: "GET",
                         xhrFields: {
-                            withCredentials: true
+                            withCredentials: false
                         },
                         beforeSend: function () {
                             $("#checkusername").attr("class", "glyphicon glyphicon-refresh");
@@ -51,10 +51,10 @@ and open the template in the editor.
                 });
                 $("#email").change(function () {
                     $.ajax({
-                        url: "http://localhost:8080/DatingApp-V1/getservice/checkuseremail/" + $("#email").val(),
+                        url: "http://localhost:8080/datingapp/getservice/checkuseremail/" + $("#email").val(),
                         method: "GET",
                         xhrFields: {
-                            withCredentials: true
+                            withCredentials: false
                         },
                         beforeSend: function () {
                             $("#checkemail").attr("class", "glyphicon glyphicon-refresh");
@@ -67,6 +67,13 @@ and open the template in the editor.
                             $("#checkemail").attr("class", "glyphicon glyphicon-ok");
                         }
                     });
+                });
+                $("#re-pwd").change(function () {
+                    if ($("#re-pwd").val() === $("#pwd").val()) {
+                        $("#checkpassword").attr("class", "glyphicon glyphicon-remove");
+                    } else {
+                        $("#checkpassword").attr("class", "glyphicon glyphicon-ok");
+                    }
                 });
                 $("#btnSubmit").click(function (event) {
                     event.preventDefault();
@@ -103,12 +110,12 @@ and open the template in the editor.
                                 var photo_hash = response.data.deletehash;
 
                                 $.ajax({
-                                    url: "http://localhost:8080/DatingApp-V1/postservice/user/add",
+                                    url: "http://localhost:8080/datingapp/postservice/user/add",
                                     type: "POST",
                                     xhrFields: {
-                                        withCredentials: true
+                                        withCredentials: false
                                     },
-                                    contentType: "application/json",
+                                    contentType: "application/json; charset=utf-8",
                                     data: JSON.stringify(userData),
                                     beforeSend: function (xhr) {
                                         xhr.setRequestHeader('Authorization', 'Basic ' + btoa('admin:admin'));
@@ -140,6 +147,14 @@ and open the template in the editor.
                 }
                 if ($("#checkusername").attr("class") === "glyphicon glyphicon-remove") {
                     $("#msg").text("Invalid username!");
+                    $("#msg").show();
+                    setTimeout(function () {
+                        $("#msg").hide()
+                    }, 5000)
+                    return false;
+                }
+                if ($("#checkpassword").attr("class") === "glyphicon glyphicon-remove") {
+                    $("#msg").text("Password not match!");
                     $("#msg").show();
                     setTimeout(function () {
                         $("#msg").hide()
@@ -215,6 +230,7 @@ and open the template in the editor.
         </script>
     </head>
     <body>
+        <div id="header"></div>
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center"></div>
             <div class="jumbotron">
@@ -234,6 +250,11 @@ and open the template in the editor.
                 <div class="form-group">
                     <label for="pwd">Password:</label>
                     <input type="password" class="form-control" id="pwd">
+                </div>
+                <div class="form-group">
+                    <label for="re-pwd">Retype password:</label>
+                    <input type="password" class="form-control" id="re-pwd" style="float:left;">
+                    <span id="checkpassword"></span>
                 </div>
                 <div class="form-group">
                     <label for="picture">Avatar: </label>

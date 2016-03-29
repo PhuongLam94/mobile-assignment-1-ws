@@ -27,6 +27,7 @@ and open the template in the editor.
                 if (!window.sessionStorage.userauth) {
                     window.location = "index.html";
                 }
+                $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
                 var currentuserid = window.sessionStorage.getItem("currentuserid");
@@ -64,10 +65,10 @@ and open the template in the editor.
                     setFriendStatus(userid, currentuserid, -1, userAuth);
                 });
                 $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + currentuserid,
+                    url: "http://localhost:8080/datingapp/getservice/getuser/" + currentuserid,
                     type: "GET",
                     xhrFields: {
-                        withCredentials: true
+                        withCredentials: false
                     },
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
@@ -163,10 +164,10 @@ and open the template in the editor.
             };
             var setFriendStatus = function (user1, user2, status, userAuth) {
                 $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
+                    url: "http://localhost:8080/datingapp/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
                     type: "PUT",
                     xhrFields: {
-                        withCredentials: true
+                        withCredentials: false
                     },
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
@@ -181,6 +182,7 @@ and open the template in the editor.
 
     </head>
     <body>
+        <div id="header"></div>
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
             </div>

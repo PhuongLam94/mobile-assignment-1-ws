@@ -20,6 +20,7 @@ and open the template in the editor.
                 if (!window.sessionStorage.userauth) {
                     window.location = "index.html";
                 }
+                $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
                 $(document).ajaxStart(function () {
@@ -53,13 +54,14 @@ and open the template in the editor.
                                     content: response.data.link,
                                     description: $("#description").val()
                                 };
+                                console.log(imageData);
                                 $.ajax({
-                                    url: "http://localhost:8080/DatingApp-V1/postservice/picture/add",
+                                    url: "http://localhost:8080/datingapp/postservice/picture/add",
                                     type: "POST",
                                     xhrFields: {
-                                        withCredentials: true
+                                        withCredentials: false
                                     },
-                                    contentType: "application/json",
+                                    contentType: "application/json; charset=utf-8",
                                     data: JSON.stringify(imageData),
                                     beforeSend: function (xhr) {
                                         xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
@@ -105,6 +107,7 @@ and open the template in the editor.
 
     </head>
     <body>
+        <div id="header"></div>
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
             </div>

@@ -24,22 +24,23 @@ and open the template in the editor.
                 if (!window.sessionStorage.userauth) {
                     window.location = "index.html";
                 }
+                $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
 
                 $(document).ajaxStart(function () {
-                    $("#loading-image").show();
+                    $(".loading-image").show();
                     $("button").prop("disabled", true);
                 });
                 $(document).ajaxStop(function () {
-                    $("#loading-image").hide();
+                    $(".loading-image").hide();
                     $("button").prop("disabled", false);
                 });
                 $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/getservice/getuser/" + userid,
+                    url: "http://localhost:8080/datingapp/getservice/getuser/" + userid,
                     type: "GET",
                     xhrFields: {
-                        withCredentials: true
+                        withCredentials: false
                     },
                     beforeSend: function (xhr) {
                         xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
@@ -67,6 +68,74 @@ and open the template in the editor.
 
                     }
                 })
+                $("#btnChangePassword").click(function (event) {
+                    event.preventDefault();
+                    $(this).hide();
+                    $("#change-password").show();
+                });
+                $("#btnSavePassword").click(function (event) {
+                    event.preventDefault();
+                    var newPwd = $("#new-pwd").val();
+                    var renewPwd = $("#re-new-pwd").val();
+                    if ($("#old-pwd").val() === "") {
+                        // && newPwd !== "" && renewPwd !== "" && renewPwd === newPwd){
+                        $("#msg").text("Please enter old password!");
+                        $("#msg").show();
+                        setTimeout(function () {
+                            $("#msg").hide()
+                        }, 5000)
+                    } else {
+                        if (newPwd === "") {
+                            $("#msg").text("Please enter new password!");
+                            $("#msg").show();
+                            setTimeout(function () {
+                                $("#msg").hide()
+                            }, 5000)
+                        } else {
+                            if (renewPwd !== newPwd) {
+                                $("#msg").text("New password not match!");
+                                $("#msg").show();
+                                setTimeout(function () {
+                                    $("#msg").hide()
+                                }, 5000)
+                            } else {
+                                var pwdData = {
+                                    oldPassword: $("#old-pwd").val(),
+                                    newPassword: newPwd
+                                };
+                                $.ajax({
+                                    url: "http://localhost:8080/datingapp/putservice/setPassword",
+                                    type: "PUT",
+                                    xhrFields: {
+                                        withCredentials: false
+                                    },
+                                    contentType: "application/json; charset=utf-8",
+                                    data: JSON.stringify(pwdData),
+                                    beforeSend: function (xhr) {
+                                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                                    }
+                                }).done(function (data) {
+                                    if (data.message === "Successful") {
+                                        $("#msg").text("Password changed successfully!");
+                                        $("#msg").show();
+                                        setTimeout(function () {
+                                            $("#msg").hide()
+                                        }, 5000)
+                                        $("#change-password").hide();
+                                        $("#btnChangePassword").show();
+                                        $("#change-password input").val("");
+                                    } else {
+                                        $("#msg").text(data.message);
+                                        $("#msg").show();
+                                        setTimeout(function () {
+                                            $("#msg").hide()
+                                        }, 5000)
+                                    }
+                                });
+                            }
+                        }
+                    }
+                })
                 $("#btnSubmit").click(function (event) {
                     event.preventDefault();
                     if (checkForm()) {
@@ -80,51 +149,37 @@ and open the template in the editor.
                             address: $("#address").val(),
                             height: $("#height").val(),
                             weight: $("#weight").val(),
-                            avatar: "",
+                            avatar: $("#output").attr("src"),
                             gender: $("input[type='radio']:checked").val() === "female" ? 1 : 2,
                             birthday: $("#birthday").val() === "" ? null : $("#birthday").val(),
                             message: "",
                             test: $("#username").val(),
                         };
-                        var formData = new FormData();
-                        formData.append("image", $("#picture")[0].files[0]);
-                        $.ajax({
-                            url: "https://api.imgur.com/3/image",
-                            type: "POST",
-                            datatype: "json",
-                            contentType: false,
-                            processData: false,
-                            headers: {
-                                "Authorization": "Client-ID 142cd168e236fc9"
-                            },
-                            data: formData,
-                            success: function (response) {
-                                console.log(response);
-                                userData.avatar = response.data.link;
-                                $.ajax({
-                                    url: "http://localhost:8080/DatingApp-V1/putservice/user/edit",
-                                    type: "PUT",
-                                    xhrFields: {
-                                        withCredentials: true
-                                    },
-                                    contentType: "application/json",
-                                    data: JSON.stringify(userData),
-                                    beforeSend: function (xhr) {
-                                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
-                                    }
-                                }).done(function (data) {
-                                    if (data.message === "Successful") {
-                                        window.alert("Info saved, click OK to go back to profile");
-                                        window.location = "index.html";
-                                    }
-                                });
-                            }
-                        });
-
+                        if ($("#picture")[0].files.length === 0) {
+                            editUser(userData, userAuth);
+                        } else {
+                            var formData = new FormData();
+                            formData.append("image", $("#picture")[0].files[0]);
+                            $.ajax({
+                                url: "https://api.imgur.com/3/image",
+                                type: "POST",
+                                datatype: "json",
+                                contentType: false,
+                                processData: false,
+                                headers: {
+                                    "Authorization": "Client-ID 142cd168e236fc9"
+                                },
+                                data: formData,
+                                success: function (response) {
+                                    console.log(response);
+                                    userData.avatar = response.data.link;
+                                    editUser(userData, userAuth);
+                                }
+                            });
+                        }
                     }
-
                 });
-                $("#btnBack").click(function(){
+                $("#btnBack").click(function () {
                     window.sessionStorage.setItem("currentuserid", userid);
                     window.location = "profile.html";
                 })
@@ -141,6 +196,25 @@ and open the template in the editor.
                 }
                 return true;
             }
+            var editUser = function (userData, userAuth) {
+                $.ajax({
+                    url: "http://localhost:8080/datingapp/putservice/user/edit",
+                    type: "PUT",
+                    xhrFields: {
+                        withCredentials: false
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify(userData),
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                    }
+                }).done(function (data) {
+                    if (data.message === "Successful") {
+                        window.alert("Info saved, click OK to go back to profile");
+                        window.location = "index.html";
+                    }
+                });
+            }
             var openFile = function (event) {
                 var input = event.target;
                 var reader = new FileReader();
@@ -156,23 +230,33 @@ and open the template in the editor.
         </script>
     </head>
     <body>
+        <div id="header"></div>
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center"></div>
             <div class="jumbotron">
-                <h3 id="title">Edit profile</h3>
+                <h3 id="title" style="float: left">Edit profile</h3>
+                <div  class="loading-image" align="center" style="float: left">
+                    <img style="height: 40px; width: 40px;padding: 10px;" alt="loading" src="Resource/loading_spinner.gif" />
+                </div>
             </div>
             <form role="form">
                 <div class="form-group">
                     <label for="username">Username:</label>
-                    <input type="text" class="form-control" id="username" style="float: left;" readonly>
+                    <input type="text" class="form-control" id="username" readonly>
                 </div>
                 <div class="form-group">
                     <label for="email">Email address:</label>
-                    <input type="email" class="form-control" id="email" style="float: left;" readonly>
+                    <input type="email" class="form-control" id="email" readonly>
                 </div>
                 <div class="form-group">
                     <label for="pwd">Password:</label>
-                    <button id="btnChangePassword">Change password</button>
+                    <button class="btn btn-warning" id="btnChangePassword">Change password</button>
+                    <div id="change-password" style="display: none; padding: 5px;">
+                        <input type="password" class="form-control" id="old-pwd" placeholder="Type old password">
+                        <input style="margin-top: 5px;" type="password" class="form-control" id="new-pwd" placeholder="Type new password">
+                        <input style="margin-top: 5px;" type="password" class="form-control" id="re-new-pwd" placeholder="Re type new password">
+                        <button style="margin-top: 5px;" class="btn btn-success" id="btnSavePassword">Save</button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="picture">Avatar: </label>
@@ -219,7 +303,7 @@ and open the template in the editor.
                     <button class="btn btn-primary" id="btnSubmit">Save</button>
                     <button class="btn btn-success" id="btnBack">Back</button>
                 </div>
-                <div  id="loading-image" align="center" style="display: none; float: right">
+                <div  class="loading-image" align="center" style="display: none; float: right">
                     <img style="height: 40px; width: 40px" alt="loading" src="Resource/loading_spinner.gif" />
                 </div>
             </form>

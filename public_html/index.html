@@ -30,32 +30,34 @@ and open the template in the editor.
                 });
                 $("#btnSubmit").click(function (event) {
                     event.preventDefault();
-                    if (true) {
-                        $.ajax({
-                            url: "http://localhost:8080/DatingApp-V1/getservice/checkuser",
-                            type: "GET",
-                            xhrFields: {
-                                withCredentials: true
-                            },
-                            beforeSend: function (xhr) {
-                                xhr.setRequestHeader('Authorization', 'Basic ' + btoa($("#username").val() + ':' + $("#pwd").val()));
-                            },
-                            success: function (data) {
-                                if (data.message === "Successful") {
+                    if (checkForm()) {
+                        if (true) {
+                            $.ajax({
+                                url: "http://localhost:8080/datingapp/getservice/checkuser",
+                                type: "GET",
+                                xhrFields: {
+                                    withCredentials: false
+                                },
+                                beforeSend: function (xhr) {
+                                    xhr.setRequestHeader('Authorization', 'Basic ' + btoa($("#username").val() + ':' + $("#pwd").val()));
+                                },
+                                success: function (data) {
+                                    if (data.message === "Successful") {
 
-                                    window.sessionStorage.setItem("userauth", $("#username").val() + ':' + $("#pwd").val());
-                                    window.sessionStorage.setItem("userid", data.userid);
-                                    window.sessionStorage.setItem("currentuserid", data.userid);
-                                    window.location = "profile.html";
-                                } else {
-                                    $("#msg").html(data.message);
-                                    $("#msg").show();
-                                    setTimeout(function () {
-                                        $("#msg").hide();
-                                    }, 5000);
+                                        window.sessionStorage.setItem("userauth", $("#username").val() + ':' + $("#pwd").val());
+                                        window.sessionStorage.setItem("userid", data.userid);
+                                        window.sessionStorage.setItem("currentuserid", data.userid);
+                                        window.location = "profile.html";
+                                    } else {
+                                        $("#msg").html(data.message);
+                                        $("#msg").show();
+                                        setTimeout(function () {
+                                            $("#msg").hide();
+                                        }, 5000);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 });
 
@@ -72,7 +74,7 @@ and open the template in the editor.
                     setTimeout(function () {
                         $("#msg").hide();
                     }, 5000)
-                        return false;
+                    return false;
                 } else {
                     if ($("#pwd").val() === "") {
                         $("#msg").text("Please enter password!");
@@ -80,8 +82,8 @@ and open the template in the editor.
                         setTimeout(function () {
                             $("#msg").hide();
                         }, 5000)
-                        
-                            return false;
+
+                        return false;
                     } else {
                         return true;
                     }

@@ -15,18 +15,24 @@ and open the template in the editor.
 
         <script src="jquery-1.12.1.min.js"></script>
         <script src="bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
-
+        
+        <style>
+            .picture-tag:hover{
+                cursor: pointer;
+            }
+        </style>
         <script>
 
             $().ready(function () {
                 if (!window.sessionStorage.userauth) {
                     window.location = "index.html";
                 }
+                $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
                 var currentuserid = window.sessionStorage.getItem("currentuserid");
-                if (userid !== currentuserid) {
-                    $("#btnSave").hide();
+                if (userid === currentuserid) {
+                    $("#btnAdd").show();
                 }
                 $(document).ajaxStart(function () {
                     $("#loading-image").show();
@@ -37,10 +43,10 @@ and open the template in the editor.
                     $("button").prop("disabled", false);
                 });
                 $.ajax({
-                    url: "http://localhost:8080/DatingApp-V1/getservice/getpicture/" + currentuserid + "/all",
+                    url: "http://localhost:8080/datingapp/getservice/getpicture/" + currentuserid + "/all",
                     method: "GET",
                     xhrFields: {
-                        withCredentials: true
+                        withCredentials: false
                     },
                     beforeSend: function (xhr) {
                         console.log("abc");
@@ -52,21 +58,21 @@ and open the template in the editor.
                             $("#msg").text(data.message);
                             $("#msg").show();
                             setTimeout(function () {
-                                $("#msg").hide;
+                                $("#msg").hide();
                             }, 5000);
                         } else {
-                            if (data.length == 0) {
+                            if (data.length === 0) {
                                 $("#msg").text("No picture found");
                                 $("#msg").show();
                                 setTimeout(function () {
-                                    $("#msg").hide;
+                                    $("#msg").hide();
                                 }, 5000);
                             };
                             $.each(data, function (index, picture) {
                                 console.log(picture);
                                 var $tag = $("<img/>", {
                                     id: picture.id,
-                                    class: "col-md-4 col-sm-6 col-xs-8 col-xs-off-set-2",
+                                    class: "col-md-4 col-sm-6 col-xs-8 col-xs-off-set-2 picture-tag",
                                     src: picture.content,
                                     alt: "Picture not found",
                                     style: "height: 200px; width: 300px"
@@ -76,6 +82,10 @@ and open the template in the editor.
                         }
                     }
                 });
+                $("body").on("click", ".picture-tag", function(){
+                    sessionStorage.pictureid=$(this).attr("id");
+                    window.location = "picture.html";
+                })
                 $("#btnBack").click(function () {
                     window.location = "profile.html";
                 });
@@ -87,6 +97,7 @@ and open the template in the editor.
         </script>
     </head>
     <body>
+        <div id="header"></div>
         <div class="container">
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
             </div>
@@ -98,7 +109,7 @@ and open the template in the editor.
                 <img style="height: 75px; width: 75px" alt="loading" src="Resource/loading_spinner.gif" />
             </div>
             <div align="right" class="col-md-12">
-                <button class="btn btn-primary" id="btnAdd">Add new picture</button>
+                <button class="btn btn-primary" id="btnAdd" style="display:none;">Add new picture</button>
                 <button class="btn btn-success" id="btnBack">Back</button>
             </div>
         </div>

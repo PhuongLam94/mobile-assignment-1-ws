@@ -22,7 +22,7 @@ and open the template in the editor.
             $().ready(function () {
                 //var users1 = [{id: "1", username: "phuonglam", name: "Lam Minh Phuong", email: "abc@example.com", status: "1"}, {id: "2",username: "huongnguyen", name: "Nguyen Thi Huong", email: "abc2@example.com", status: "1"}, {id: "3", username: "huela", name: "La Van Hue", email: "abc3@example.com", status: "1"}, {id: "4", username: "tienngo", name: "Ngo Thuy Tien", email: "abc4@example.com", status: "1"}];
                 if (!window.sessionStorage.userauth) {
-                    window.location = "index.html";
+                    window.location = "home.html";
                 }
                 $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
@@ -37,7 +37,7 @@ and open the template in the editor.
                     $("button").prop("disabled", false);
                 });
                 $.ajax({
-                    url: "http://localhost:8080/datingapp/getservice/getuser/" + userid,
+                    url: "https://intense-chamber-28418.herokuapp.com/getservice/getuser/" + userid,
                     type: "GET",
                     xhrFields: {
                         withCredentials: false
@@ -63,7 +63,7 @@ and open the template in the editor.
                             $("#weight").val(data.weight);
                         } else {
                             window.sessionStorage.clear();
-                            window.location = "index.html";
+                            window.location = "home.html";
                         }
 
                     }
@@ -104,7 +104,7 @@ and open the template in the editor.
                                     newPassword: newPwd
                                 };
                                 $.ajax({
-                                    url: "http://localhost:8080/datingapp/putservice/setPassword",
+                                    url: "https://intense-chamber-28418.herokuapp.com/putservice/setPassword",
                                     type: "PUT",
                                     xhrFields: {
                                         withCredentials: false
@@ -198,7 +198,7 @@ and open the template in the editor.
             }
             var editUser = function (userData, userAuth) {
                 $.ajax({
-                    url: "http://localhost:8080/datingapp/putservice/user/edit",
+                    url: "https://intense-chamber-28418.herokuapp.com/putservice/user/edit",
                     type: "PUT",
                     xhrFields: {
                         withCredentials: false
@@ -211,7 +211,7 @@ and open the template in the editor.
                 }).done(function (data) {
                     if (data.message === "Successful") {
                         window.alert("Info saved, click OK to go back to profile");
-                        window.location = "index.html";
+                        window.location = "home.html";
                     }
                 });
             }

@@ -67,6 +67,9 @@ and open the template in the editor.
         document.getElementsByClassName("topnav")[0].classList.toggle("responsive");
     }
     $().ready(function(){
+        if (sessionStorage.userstatus !== "3"){
+            $("#user-list").hide();
+        }
         $(".menu").click(function(event){
             event.preventDefault();
         });
@@ -85,12 +88,16 @@ and open the template in the editor.
             sessionStorage.currentuserid = sessionStorage.userid;
             window.location = "list-friend.html"; 
         });
+        $("#user-list").click(function(){
+            sessionStorage.currentuserid = sessionStorage.userid;
+            window.location = "list-user.html"; 
+        });
         $("#about").click(function(){
             window.location = "about.html"; 
         });
         $("#sign-out").click(function(){
             sessionStorage.clear();
-            window.location = "index.html"; 
+            window.location = "home.html"; 
         });
     })
 </script>
@@ -99,6 +106,7 @@ and open the template in the editor.
     <li><a class="menu" id="my-profile">My Profile</a></li>
     <li><a class="menu" id="my-picture">My Pictures</a></li>
     <li><a class="menu" id="friend-list">Friend List</a></li>
+    <li><a class="menu" id="user-list">User List</a></li>
     <li><a class="menu" id="about">About</a></li>
     <li><a class="menu" id="sign-out">Sign Out</a></li>
     <li class="icon">

@@ -18,7 +18,7 @@ and open the template in the editor.
         <script>
             $().ready(function () {
                 if (!window.sessionStorage.userauth) {
-                    window.location = "index.html";
+                    window.location = "home.html";
                 }
                 $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
@@ -56,7 +56,7 @@ and open the template in the editor.
                                 };
                                 console.log(imageData);
                                 $.ajax({
-                                    url: "http://localhost:8080/datingapp/postservice/picture/add",
+                                    url: "https://intense-chamber-28418.herokuapp.com/postservice/picture/add",
                                     type: "POST",
                                     xhrFields: {
                                         withCredentials: false

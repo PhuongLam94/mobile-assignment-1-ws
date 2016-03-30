@@ -26,65 +26,8 @@ and open the template in the editor.
             $().ready(function () {
 
                 if (!window.sessionStorage.userauth) {
-                    window.location = "index.html";
+                    window.location = "home.html";
                 }
-                $.ajax({
-                    url: "http://localhost:8080/datingapp/getservice/getuser/all",
-                    method: "GET",
-                    xhrFields: {
-                        withCredentials: false
-                    },
-                    beforeSend: function (xhr) {
-                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
-                    },
-                    success: function (data) {
-                        console.log(data);
-                        if (data.message.contains("You are not allowed")) {
-                            $("#msg").text(data.message);
-                            $("#msg").show();
-                            setTimeout(function () {
-                                $("#msg").hide();
-                            }, 5000);
-                        } else {
-                            $.each(data, function (index, friend) {
-                                var $avatar = $("<img/>", {
-                                    class: "col-md-4 avatar",
-                                    src: friend.avatar,
-                                    alt: "Picture not found",
-                                    style: "height: 100px; width: 100px"
-                                });
-                                var $name = $("<a/>", {
-                                    class: "col-md-6 name",
-                                    style: "margin-top: 35px; font-size: 25px;"
-                                }).text(friend.name);
-
-                                var $div = $("<div/>", {
-                                    id: friend.id,
-                                    class: "col-md-5 col-md-offset-1 alert alert-success"
-                                }).append($avatar).append($name);
-                                var $buttons = $("<div/>", {
-                                    class: "col-md-2 buttons"
-                                });
-                                var $button2 = $("<button/>", {
-                                    id: "reset-btn",
-                                    class: "btn btn-danger",
-                                    style: "margin-top: 5px;"
-                                }).text("Reset password");
-                                $($buttons).append($button2);
-                                if (friend.status !== 3) {
-                                    var $button = $("<button/>", {
-                                        id: "admin-btn",
-                                        class: "btn btn-primary",
-                                        style: "margin-top: 15px;"
-                                    }).text("Set admin");
-                                    $($buttons).append($button);
-                                }
-                                $div.append($buttons);
-                                $("#friend-area").append($div);
-                            });
-                        }
-                    }
-                });
                 $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
@@ -96,17 +39,103 @@ and open the template in the editor.
                     $("#loading-image").hide();
                     $("button").prop("disabled", false);
                 });
+                $.ajax({
+                    url: "https://intense-chamber-28418.herokuapp.com/getservice/getuser/all",
+                    method: "GET",
+                    xhrFields: {
+                        withCredentials: false
+                    },
+                    beforeSend: function (xhr) {
+                        xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        if ("message" in data) {
+                            setMessage(data.message);
+                        } else {
+                            $.each(data, function (index, friend) {
+                                var $avatar = $("<img/>", {
+                                    class: "col-md-4 avatar",
+                                    src: friend.avatar,
+                                    alt: "Picture not found",
+                                    style: "height: 100px; width: 100px"
+                                });
+                                var $name = $("<a/>", {
+                                    class: "col-md-5 name",
+                                    style: "margin-top: 35px; font-size: 23px;"
+                                }).text(friend.name);
+
+                                var $div = $("<div/>", {
+                                    id: friend.id,
+                                    class: "col-md-5 col-md-offset-1 alert alert-success"
+                                }).append($avatar).append($name);
+                                var $buttons = $("<div/>", {
+                                    class: "col-md-3 buttons"
+                                });
+                                var $button2 = $("<button/>", {
+                                    class: "btn btn-danger reset-btn",
+                                    style: "margin-top: 5px;"
+                                }).text("Reset password");
+                                $($buttons).append($button2);
+                                if (friend.status !== 3) {
+                                    var $button = $("<button/>", {
+                                        class: "btn btn-primary admin-btn",
+                                        style: "margin-top: 15px;"
+                                    }).text("Set admin");
+                                    $($buttons).append($button);
+                                }
+                                $div.append($buttons);
+                                $("#friend-area").append($div);
+                            });
+                        }
+                    }
+                });
 
                 $("body").on("click", ".name", function (event) {
                     event.preventDefault();
                     sessionStorage.currentuserid = $($(event.target).parent()).attr("id");
                     window.location = "profile.html";
                 });
-                $("body").on("click", "#admin-btn", function (event) {
-                    
+                $("body").on("click", ".admin-btn", function (event) {
+                    var res = confirm("Do you really want to set this user admin?")
+                    if (res) {
+                        $.ajax({
+                            url: "https://intense-chamber-28418.herokuapp.com/putservice/setAdmin/" + $(event.target).parent().parent().attr("id"),
+                            method: "PUT",
+                            xhrFields: {
+                                withCredentials: false
+                            },
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                            },
+                            success: function (data) {
+                                if (data.message === "Successful") {
+                                    setMessage("Set admin successfully");
+                                    $(event.target).hide();
+                                }
+                            }
+                        });
+                    }
                 });
-                $("body").on("click", "#reset-btn", function (event) {
-                    setFriendStatus(userid, $($($(event.target).parent()).parent()).attr("id"), -1, userAuth);
+                $("body").on("click", ".reset-btn", function (event) {
+                    var res = confirm("Do you really want to reset this user's password");
+                    if (res) {
+                        $.ajax({
+                            url: "https://intense-chamber-28418.herokuapp.com/putservice/resetPassword/" + $(event.target).parent().parent().attr("id"),
+                            method: "PUT",
+                            xhrFields: {
+                                withCredentials: false
+                            },
+                            beforeSend: function (xhr) {
+                                xhr.setRequestHeader('Authorization', 'Basic ' + btoa(userAuth));
+                            },
+                            success: function (data) {
+                                if (data.message === "Successful") {
+                                    setMessage("Reset password successfully");
+                                }
+                            }
+                        });
+                    }
                 });
                 $("#btnBack").click(function () {
                     sessionStorage.currentuserid = userid;
@@ -115,7 +144,7 @@ and open the template in the editor.
             });
             var setFriendStatus = function (user1, user2, status, userAuth) {
                 $.ajax({
-                    url: "http://localhost:8080/datingapp/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
+                    url: "https://intense-chamber-28418.herokuapp.com/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
                     type: "PUT",
                     xhrFields: {
                         withCredentials: false
@@ -129,6 +158,13 @@ and open the template in the editor.
                     }
                 });
             }
+            var setMessage = function (msg) {
+                $("#msg").text(msg);
+                $("#msg").show();
+                setTimeout(function () {
+                    $("#msg").hide();
+                }, 5000);
+            }
         </script>
 
     </head>
@@ -138,7 +174,7 @@ and open the template in the editor.
             <div id="msg" style="color: red; font-weight: bold; display: none" align="center">
             </div>
             <div class="jumbotron">
-                <h3 id="title">List friends</h3>
+                <h3 id="title">List users</h3>
             </div>
             <div id="friend-area"></div>
             <div  id="loading-image" align="center" class="col-md-10 col-md-offset-1">

@@ -25,12 +25,12 @@ and open the template in the editor.
         <script>
             $().ready(function () {
                 if (!window.sessionStorage.userauth) {
-                    window.location = "index.html";
+                    window.location = "home.html";
                 }
-                $("#header").load('private/header.html');
                 var userAuth = window.sessionStorage.getItem("userauth");
                 var userid = window.sessionStorage.getItem("userid");
                 var currentuserid = window.sessionStorage.getItem("currentuserid");
+                $("#header").load('private/header.html');
                 $(document).ajaxStart(function () {
                     $("#loading-image").show();
                     $("button").prop("disabled", true);
@@ -65,7 +65,7 @@ and open the template in the editor.
                     setFriendStatus(userid, currentuserid, -1, userAuth);
                 });
                 $.ajax({
-                    url: "http://localhost:8080/datingapp/getservice/getuser/" + currentuserid,
+                    url: "https://intense-chamber-28418.herokuapp.com/getservice/getuser/" + currentuserid,
                     type: "GET",
                     xhrFields: {
                         withCredentials: false
@@ -86,6 +86,12 @@ and open the template in the editor.
                         $("#address").text(data.address);
                         $("#birthday").text(formatDate(data.birthday));
                         $("#picture").attr("href", "list-picture.html");
+                        if (currentuserid===userid && !sessionStorage.userstatus){
+                             window.sessionStorage.setItem("userstatus", data.status);
+                             if (data.status === 3){
+                                 $("#user-list").show();
+                             }
+                        }
                         var username = userAuth.split(":")[0];
                         $("#picture").text(username === data.userName ? "Click here to see your pictures" : "Click here to see " + data.name + "'s pictures");
                         console.log(data.friendStatus);
@@ -164,7 +170,7 @@ and open the template in the editor.
             };
             var setFriendStatus = function (user1, user2, status, userAuth) {
                 $.ajax({
-                    url: "http://localhost:8080/datingapp/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
+                    url: "https://intense-chamber-28418.herokuapp.com/putservice/setfriendstatus/" + user1 + "/" + user2 + "/" + status,
                     type: "PUT",
                     xhrFields: {
                         withCredentials: false

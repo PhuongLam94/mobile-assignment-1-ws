@@ -32,7 +32,7 @@ and open the template in the editor.
                 });
                 $("#username").change(function () {
                     $.ajax({
-                        url: "http://localhost:8080/datingapp/getservice/checkusername/" + $("#username").val(),
+                        url: "https://intense-chamber-28418.herokuapp.com/getservice/checkusername/" + $("#username").val(),
                         method: "GET",
                         xhrFields: {
                             withCredentials: false
@@ -51,7 +51,7 @@ and open the template in the editor.
                 });
                 $("#email").change(function () {
                     $.ajax({
-                        url: "http://localhost:8080/datingapp/getservice/checkuseremail/" + $("#email").val(),
+                        url: "https://intense-chamber-28418.herokuapp.com/getservice/checkuseremail/" + $("#email").val(),
                         method: "GET",
                         xhrFields: {
                             withCredentials: false
@@ -110,7 +110,7 @@ and open the template in the editor.
                                 var photo_hash = response.data.deletehash;
 
                                 $.ajax({
-                                    url: "http://localhost:8080/datingapp/postservice/user/add",
+                                    url: "https://intense-chamber-28418.herokuapp.com/postservice/user/add",
                                     type: "POST",
                                     xhrFields: {
                                         withCredentials: false
@@ -123,7 +123,7 @@ and open the template in the editor.
                                 }).done(function (data) {
                                     if (data.message === "Successful") {
                                         window.alert("User created, click OK to go to log in page");
-                                        window.location = "index.html";
+                                        window.location = "home.html";
                                     }
                                 });
                             },
